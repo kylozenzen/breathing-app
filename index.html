@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mindful Breathing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            background-color: #000;
+        }
+        /* Base transition for the shape visualizer */
+        #shape-visualizer, #shape-visualizer > * {
+            transition: transform 1s ease-in-out;
+        }
+        /* Custom class for the selected option in settings */
+        .selected-option {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 3px currentColor;
+        }
+        /* Hide scrollbars for a cleaner look */
+        ::-webkit-scrollbar { display: none; }
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+
+        /* A simple fade-in animation for screens */
+        .screen {
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        /* Dynamic Animated Background */
+        #animated-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        /* Neon Glow Effects */
+        .neon-glow-fuchsia { filter: drop-shadow(0 0 4px #be185d) drop-shadow(0 0 12px #be185d); }
+        .neon-glow-cyan { filter: drop-shadow(0 0 4px #0891b2) drop-shadow(0 0 12px #0891b2); }
+        .neon-glow-lime { filter: drop-shadow(0 0 4px #65a30d) drop-shadow(0 0 12px #65a30d); }
+        .neon-glow-teal { filter: drop-shadow(0 0 4px #0d9488) drop-shadow(0 0 12px #0d9488); }
+        .neon-glow-sky { filter: drop-shadow(0 0 4px #0ea5e9) drop-shadow(0 0 12px #0ea5e9); }
+        .neon-glow-indigo { filter: drop-shadow(0 0 4px #4f46e5) drop-shadow(0 0 12px #4f46e5); }
+        .neon-glow-gold { filter: drop-shadow(0 0 4px #d97706) drop-shadow(0 0 12px #d97706); }
+        .neon-glow-amber { filter: drop-shadow(0 0 4px #f59e0b) drop-shadow(0 0 12px #f59e0b); }
+        .neon-glow-rose { filter: drop-shadow(0 0 4px #e11d48) drop-shadow(0 0 12px #e11d48); }
+
+
+        /* Custom toggle switch */
+        .toggle-checkbox:checked { background-color: currentColor; }
+        .toggle-checkbox:checked + .toggle-label { transform: translateX(100%); }
+        
+        /* Scroll indicator animation */
+        @keyframes bounce { 0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8,0,1,1); } 50% { transform: translateY(0); animation-timing-function: cubic-bezier(0,0,0.2,1); } }
+        .animate-bounce-slow { animation: bounce 1.5s infinite; }
+    </style>
+</head>
+<body class="antialiased text-white">
+
+    <!-- Animated Background -->
+    <canvas id="animated-bg"></canvas>
+
+    <!-- Main Application Container -->
+    <div id="app-container" class="w-full h-screen relative">
+
+        <!-- ======================================================= -->
+        <!-- ===================== START SCREEN ==================== -->
+        <!-- ======================================================= -->
+        <div id="start-screen" class="screen flex flex-col items-center justify-center min-h-screen p-6">
+            <div class="text-center p-6 md:p-8 rounded-2xl">
+                <h1 class="text-4xl md:text-5xl font-bold mb-4">Mindful Breathing</h1>
+                <div id="start-quote-display" class="h-20 text-base md:text-xl text-gray-300 mb-10 md:mb-12">
+                    <p id="start-quote-text"></p>
+                    <p id="start-quote-author" class="mt-2 text-sm text-white/50"></p>
+                </div>
+                <div class="space-y-4 flex flex-col items-center">
+                    <button id="start-session-btn">Start Session</button>
+                    <div class="flex gap-4">
+                       <button id="go-to-settings-btn">Settings</button>
+                       <button id="go-to-learn-btn">Learn</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- =================== SETTINGS SCREEN =================== -->
+        <!-- ======================================================= -->
+        <div id="settings-screen" class="screen hidden absolute top-0 left-0 w-full h-full flex items-center justify-center p-4">
+            <div id="settings-panel" class="w-full max-w-md mx-auto bg-black/30 backdrop-blur-sm p-4 rounded-2xl overflow-y-auto max-h-[90vh] relative">
+                <button id="settings-close-btn" class="absolute top-3 right-3 text-2xl text-white/50 hover:text-white z-20">&times;</button>
+                <h1 class="text-xl font-bold text-center mb-4">Settings</h1>
+                <div class="space-y-4 pb-8">
+                    <div>
+                        <h2 class="text-sm font-semibold mb-1">Breathing Method</h2>
+                        <div id="method-options" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-semibold mb-1">Visual Shape</h2>
+                        <div id="shape-options" class="grid grid-cols-3 gap-2">
+                            <button data-value="circle" class="option-btn p-2 h-16 rounded-lg flex items-center justify-center"><svg class="w-8 h-8 text-white/50 pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="10"><circle cx="50" cy="50" r="45"/></svg></button>
+                            <button data-value="square" class="option-btn p-2 h-16 rounded-lg flex items-center justify-center"><svg class="w-8 h-8 text-white/50 pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="10"><rect x="5" y="5" width="90" height="90"/></svg></button>
+                            <button data-value="triangle" class="option-btn p-2 h-16 rounded-lg flex items-center justify-center"><svg class="w-9 h-9 text-white/50 pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="10"><path d="M50 5 L95 80 L5 80 Z"/></svg></button>
+                        </div>
+                    </div>
+                     <div>
+                        <h2 class="text-sm font-semibold mb-1">Theme</h2>
+                        <div id="theme-options" class="grid grid-cols-3 gap-2">
+                             <button data-value="constellation" class="option-btn p-2 h-12 rounded-lg text-sm">Constellation</button>
+                             <button data-value="ocean" class="option-btn p-2 h-12 rounded-lg text-sm">Deep Ocean</button>
+                             <button data-value="dunes" class="option-btn p-2 h-12 rounded-lg text-sm">Shifting Dunes</button>
+                        </div>
+                    </div>
+                    <div id="accent-color-container">
+                        <h2 class="text-sm font-semibold mb-1">Accent Color</h2>
+                        <div id="color-options" class="grid grid-cols-3 gap-2"></div>
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-semibold mb-1">Session Duration</h2>
+                        <div id="duration-options" class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            <button data-value="60" class="option-btn p-3 rounded-lg text-sm">1 Min</button>
+                            <button data-value="180" class="option-btn p-3 rounded-lg text-sm">3 Min</button>
+                            <button data-value="300" class="option-btn p-3 rounded-lg text-sm">5 Min</button>
+                            <button data-value="Infinity" class="option-btn p-3 rounded-lg text-sm">Cont.</button>
+                        </div>
+                    </div>
+                     <div>
+                        <h2 class="text-sm font-semibold mb-2">Audio Guide</h2>
+                        <div class="bg-black/20 p-3 rounded-lg space-y-3">
+                            <div class="flex items-center justify-between">
+                                <label for="audio-toggle" class="text-white/80 text-sm">Enable Audio</label>
+                                <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                                    <input type="checkbox" id="audio-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                                    <label for="audio-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-600 cursor-pointer"></label>
+                                </div>
+                            </div>
+                             <div class="flex items-center justify-between">
+                                <label for="volume-slider" class="text-white/80 text-sm">Volume</label>
+                                <input type="range" id="volume-slider" min="-30" max="0" value="-10" class="w-1/2">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="scroll-indicator" class="sticky bottom-0 text-center hidden pointer-events-none h-12 bg-gradient-to-t from-black/80 via-black/50 to-transparent -mx-4">
+                    <p class="text-xs animate-bounce-slow pt-6">Scroll for more</p>
+                </div>
+                <div class="text-center mt-6">
+                    <button id="settings-back-btn">Back</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ======================================================= -->
+        <!-- ===================== LEARN SCREEN ==================== -->
+        <!-- ======================================================= -->
+        <div id="learn-screen" class="screen hidden absolute top-0 left-0 w-full h-full flex items-center justify-center p-4 overflow-y-auto">
+            <div class="w-full max-w-xl mx-auto bg-black/30 backdrop-blur-sm p-6 rounded-2xl">
+                <h1 class="text-2xl font-bold text-center mb-2">About Breathing</h1>
+                <p class="text-center text-gray-400 mb-6">Click a technique to learn how it helps.</p>
+                <div class="flex flex-col md:flex-row gap-4">
+                    <div id="learn-method-list" class="flex flex-col gap-2 md:w-1/3"></div>
+                    <div class="md:w-2/3 bg-gray-900/50 p-4 rounded-lg min-h-[150px] md:min-h-full">
+                        <p id="learn-summary-text" class="text-gray-300"></p>
+                    </div>
+                </div>
+                 <div class="text-center mt-6">
+                    <button id="learn-back-btn">Back</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================================================= -->
+        <!-- =================== SESSION SCREEN ==================== -->
+        <!-- ======================================================= -->
+        <div id="session-screen" class="screen hidden absolute top-0 left-0 w-full h-full flex flex-col p-6">
+            <div class="flex-grow flex flex-col items-center justify-center text-center">
+                <div id="shape-container" class="w-44 h-44 sm:w-52 sm:h-52 flex items-center justify-center">
+                    <div id="shape-visualizer" class="w-full h-full"></div>
+                </div>
+                <div class="mt-20 sm:mt-24">
+                    <p id="instruction-text" class="text-2xl sm:text-3xl font-medium h-8"></p>
+                    <p id="step-countdown-text" class="text-2xl sm:text-3xl font-bold mt-2 h-12 sm:h-14"></p>
+                </div>
+            </div>
+            <div class="absolute bottom-6 left-1/2 -translate-x-1/2 w-full max-w-md flex flex-col items-center gap-3 px-6">
+                 <p id="timer-text" class="text-sm text-white/70"></p>
+                <div class="flex items-center gap-4">
+                    <button id="pause-resume-btn"></button>
+                    <button id="end-session-btn"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    // --- CONFIGURATION DATA ---
+    const breathingMethods = { 
+        '4-7-8': { name: '4-7-8', short: 'Relax', steps: [{ text: 'Breathe In', time: 4, scale: 1.5 }, { text: 'Hold', time: 7, scale: 1.5 }, { text: 'Breathe Out', time: 8, scale: 1 }], summary: "Known as the 'Relaxing Breath,' this technique can help with anxiety and sleep. The long exhale helps calm the nervous system." },
+        'box': { name: 'Box', short: 'Focus', steps: [{ text: 'Breathe In', time: 4, scale: 1.5 }, { text: 'Hold', time: 4, scale: 1.5 }, { text: 'Breathe Out', time: 4, scale: 1 }, { text: 'Hold', time: 4, scale: 1 }], summary: "Used by Navy SEALs, this technique is excellent for focus and stress control. The equal-sided counts help regulate the body's natural rhythm." },
+        '4-8': { name: '4-8', short: 'Calm', steps: [{ text: 'Breathe In', time: 4, scale: 1.5 }, { text: 'Breathe Out', time: 8, scale: 1 }], summary: "By making the exhale twice as long as the inhale, this method activates the 'rest and digest' response, promoting deep relaxation." },
+        'sigh': { name: 'Sigh', short: 'Reset', steps: [{ text: 'Inhale', time: 1.5, scale: 1.3 }, { text: 'Inhale Again', time: 1, scale: 1.5 }, { text: 'Long Exhale', time: 6, scale: 1 }], summary: "This is the body's fastest natural way to reset stress. The double inhale pops open tiny air sacs in the lungs, allowing for a more efficient release of carbon dioxide." },
+        '7-11': { name: '7/11', short: 'Anxiety', steps: [{ text: 'Breathe In', time: 7, scale: 1.5 }, { text: 'Breathe Out', time: 11, scale: 1 }], summary: "A powerful technique for managing anxiety and panic. The extended exhale signals the brain to slow down, reducing feelings of being overwhelmed." },
+        '5-5': { name: '5-5', short: 'Coherent', steps: [{ text: 'Breathe In', time: 5, scale: 1.5 }, { text: 'Breathe Out', time: 5, scale: 1 }], summary: "This simple, balanced breath helps synchronize your heart rate and breathing, leading to a state of calm coherence and improved cardiovascular function." },
+        'pursed': { name: '2-4', short: 'Pursed Lip', steps: [{ text: 'Breathe In', time: 2, scale: 1.5 }, { text: 'Breathe Out', time: 4, scale: 1 }], summary: "Often taught for managing shortness of breath, this technique slows the breathing pace and makes each breath more effective by keeping airways open longer." },
+        'ujjayi': { name: 'Ujjayi', short: 'Yoga', steps: [{ text: 'Breathe In', time: 4, scale: 1.5 }, { text: 'Breathe Out', time: 6, scale: 1 }], summary: "Known as 'Victorious Breath' in yoga, this technique involves constricting the throat slightly to create a soft, ocean-like sound, which helps build internal heat and focus." }
+    };
+    const themes = {
+        constellation: {
+            name: 'Constellation',
+            renderer: animateConstellation,
+            colors: {
+                fuchsia: { name: 'Fuchsia', main: 'border-fuchsia-500', text: 'text-fuchsia-400', btn: 'border-fuchsia-600', hover: 'hover:bg-fuchsia-950/70', glow: 'neon-glow-fuchsia', stroke: 'rgba(224, 78, 202, 0.2)' },
+                cyan: { name: 'Cyan', main: 'border-cyan-500', text: 'text-cyan-400', btn: 'border-cyan-600', hover: 'hover:bg-cyan-950/70', glow: 'neon-glow-cyan', stroke: 'rgba(6, 182, 212, 0.2)' },
+                lime: { name: 'Lime', main: 'border-lime-500', text: 'text-lime-400', btn: 'border-lime-600', hover: 'hover:bg-lime-950/70', glow: 'neon-glow-lime', stroke: 'rgba(132, 204, 22, 0.2)' }
+            }
+        },
+        ocean: {
+            name: 'Deep Ocean',
+            renderer: animateOcean,
+            colors: {
+                teal: { name: 'Teal', main: 'border-teal-400', text: 'text-teal-300', btn: 'border-teal-500', hover: 'hover:bg-teal-950/70', glow: 'neon-glow-teal', stroke: 'rgba(45, 212, 191, 0.3)' },
+                sky: { name: 'Sky', main: 'border-sky-400', text: 'text-sky-300', btn: 'border-sky-500', hover: 'hover:bg-sky-950/70', glow: 'neon-glow-sky', stroke: 'rgba(56, 189, 248, 0.3)' },
+                indigo: { name: 'Indigo', main: 'border-indigo-400', text: 'text-indigo-300', btn: 'border-indigo-500', hover: 'hover:bg-indigo-950/70', glow: 'neon-glow-indigo', stroke: 'rgba(129, 140, 248, 0.3)' }
+            }
+        },
+        dunes: {
+            name: 'Shifting Dunes',
+            renderer: animateDunes,
+            colors: {
+                gold: { name: 'Gold', main: 'border-yellow-500', text: 'text-yellow-400', btn: 'border-yellow-600', hover: 'hover:bg-yellow-950/70', glow: 'neon-glow-gold', stroke: 'rgba(234, 179, 8, 0.5)' },
+                amber: { name: 'Amber', main: 'border-amber-500', text: 'text-amber-400', btn: 'border-amber-600', hover: 'hover:bg-amber-950/70', glow: 'neon-glow-amber', stroke: 'rgba(245, 158, 11, 0.5)' },
+                rose: { name: 'Rose', main: 'border-rose-500', text: 'text-rose-400', btn: 'border-rose-600', hover: 'hover:bg-rose-950/70', glow: 'neon-glow-rose', stroke: 'rgba(244, 63, 94, 0.5)' }
+            }
+        }
+    };
+    const shapes = { 
+        circle: `<svg class="w-full h-full" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="8"><circle cx="50" cy="50" r="45"/></svg>`, 
+        square: `<svg class="w-full h-full" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path id="box-path" d="M 5 5 L 95 5 L 95 95 L 5 95 Z" /></svg>`,
+        triangle: `<svg class="w-full h-full" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M50 5 L95 80 L5 80 Z"/></svg>`
+    };
+    const quotes = [ { text: "The only way to make sense out of change is to plunge into it, move with it, and join the dance.", author: "Alan Watts" }, { text: "This is the real secret of life -- to be completely engaged with what you are doing in the here and now. And instead of calling it work, realize it is play.", author: "Alan Watts" }, { text: "Muddy water is best cleared by leaving it alone.", author: "Alan Watts" }, { text: "The future is a concept, it doesn't exist. There is no such thing as tomorrow. There never will be, because time is always now.", author: "Alan Watts" }, { text: "To have faith is to trust yourself to the water. When you swim you don't grab hold of the water, because if you do you will sink and drown. Instead you relax, and float.", author: "Alan Watts" }, { text: "The quieter you become, the more you are able to hear.", author: "Rumi" }, { text: "Within you, there is a stillness and a sanctuary to which you can retreat at any time and be yourself.", author: "Hermann Hesse" }, { text: "Feelings come and go like clouds in a windy sky. Conscious breathing is my anchor.", author: "Thich Nhat Hanh" } ];
+
+    // --- DOM ELEMENT REFERENCES ---
+    const animatedBg = document.getElementById('animated-bg');
+    const screens = { start: document.getElementById('start-screen'), settings: document.getElementById('settings-screen'), learn: document.getElementById('learn-screen'), session: document.getElementById('session-screen') };
+    const buttons = { startSession: document.getElementById('start-session-btn'), goToSettings: document.getElementById('go-to-settings-btn'), goToLearn: document.getElementById('go-to-learn-btn'), settingsBack: document.getElementById('settings-back-btn'), settingsClose: document.getElementById('settings-close-btn'), learnBack: document.getElementById('learn-back-btn'), pauseResume: document.getElementById('pause-resume-btn'), endSession: document.getElementById('end-session-btn') };
+    const shapeVisualizer = document.getElementById('shape-visualizer');
+    const instructionText = document.getElementById('instruction-text');
+    const timerText = document.getElementById('timer-text');
+    const stepCountdownText = document.getElementById('step-countdown-text');
+    const learnMethodList = document.getElementById('learn-method-list');
+    const learnSummaryText = document.getElementById('learn-summary-text');
+    const startQuote = { text: document.getElementById('start-quote-text'), author: document.getElementById('start-quote-author') };
+    const audioToggle = document.getElementById('audio-toggle');
+    const volumeSlider = document.getElementById('volume-slider');
+    const settingsPanel = document.getElementById('settings-panel');
+    const scrollIndicator = document.getElementById('scroll-indicator');
+    
+    // --- STATE MANAGEMENT ---
+    let appState = { settings: { method: '4-7-8', shape: 'circle', theme: 'constellation', accentColor: 'fuchsia', duration: 60, audioEnabled: false, volume: -10 }, session: { isRunning: false, isPaused: false, timerId: null, cycleTimeoutId: null, stepCountdownIntervalId: null, timeRemaining: 0, currentStep: 0 } };
+    let animationFrameId;
+    let synth;
+
+    // --- AUDIO SETUP ---
+    function setupAudio() {
+        if (!synth) {
+            synth = new Tone.Synth({ oscillator: { type: 'sine' }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.3, release: 1 } }).toDestination();
+        }
+        synth.volume.value = appState.settings.volume;
+    }
+    
+    // --- SCREEN NAVIGATION ---
+    function showScreen(screenName) {
+        Object.values(screens).forEach(screen => screen.classList.add('hidden', 'opacity-0'));
+        screens[screenName].classList.remove('hidden');
+        setTimeout(() => screens[screenName].classList.remove('opacity-0'), 50);
+        themes[appState.settings.theme].renderer();
+        if (screenName === 'settings') setTimeout(checkScrollIndicator, 100);
+    }
+
+    // --- THEME APPLICATION ---
+    function applyTheme() {
+        const color = themes[appState.settings.theme].colors[appState.settings.accentColor];
+        const btnBaseClasses = {
+            start: 'w-64 px-8 py-4 text-xl font-bold rounded-full shadow-lg transform hover:scale-105 transition-all duration-300',
+            secondary: 'w-32 px-4 py-2 text-lg font-semibold rounded-full shadow-lg transform hover:scale-105 transition-all duration-300',
+            back: 'px-12 py-3 text-lg font-semibold rounded-full shadow-lg transform hover:scale-105 transition-all duration-300',
+            session: 'px-6 py-2 text-sm rounded-full font-semibold transition-all'
+        };
+        const neonBtnClasses = `bg-black/20 border-2 ${color.btn} ${color.hover} ${color.text}`.split(' ').filter(Boolean);
+        
+        Object.entries(buttons).forEach(([key, btn]) => {
+            if (!btn) return;
+            let type = 'secondary';
+            if (key.includes('startSession')) type = 'start';
+            if (key.includes('Back')) type = 'back';
+            if (key.includes('pause') || key.includes('end')) type = 'session';
+            
+            let base = btnBaseClasses[type] || '';
+            if (key.includes('Close')) base = 'text-2xl text-white/50 hover:text-white';
+            
+            btn.className = `${base} ${neonBtnClasses.join(' ')}`;
+        });
+        buttons.endSession.classList.add('hidden');
+        buttons.settingsClose.className = 'absolute top-3 right-3 text-2xl text-white/50 hover:text-white z-20';
+
+
+        const shapeDiv = shapeVisualizer.querySelector('div, svg');
+        if (shapeDiv) {
+            shapeDiv.className = '';
+            const mainClasses = `bg-transparent ${color.main}`.split(' ').filter(Boolean);
+            if (appState.settings.shape !== 'square') shapeDiv.classList.add(...mainClasses);
+            
+            instructionText.className = instructionText.className.split(' ').filter(c => !c.startsWith('text-')).join(' ');
+            stepCountdownText.className = stepCountdownText.className.split(' ').filter(c => !c.startsWith('text-')).join(' ');
+            instructionText.classList.add(color.text);
+            stepCountdownText.classList.add(color.text);
+            shapeVisualizer.className = 'w-full h-full';
+            shapeVisualizer.classList.add(color.glow);
+        }
+    }
+
+    // --- SETTINGS & LEARN LOGIC ---
+    function setupOptionSelectors() {
+        const methodOptionsContainer = document.getElementById('method-options');
+        methodOptionsContainer.innerHTML = '';
+        Object.entries(breathingMethods).forEach(([key, value]) => {
+            const button = document.createElement('button');
+            button.dataset.value = key;
+            button.className = 'option-btn p-2 rounded-lg text-center text-xs';
+            button.innerHTML = `<span class="font-bold text-sm">${value.name}</span><br><span class="text-gray-300">${value.short}</span>`;
+            methodOptionsContainer.appendChild(button);
+        });
+        methodOptionsContainer.addEventListener('click', e => {
+            const button = e.target.closest('.option-btn');
+            if (!button) return;
+            appState.settings.method = button.dataset.value;
+            document.querySelectorAll(`#method-options .option-btn`).forEach(btn => btn.classList.remove('selected-option'));
+            button.classList.add('selected-option');
+        });
+        document.getElementById('shape-options').addEventListener('click', e => {
+            const button = e.target.closest('.option-btn');
+            if (!button) return;
+            appState.settings.shape = button.dataset.value;
+            document.querySelectorAll(`#shape-options .option-btn`).forEach(btn => btn.classList.remove('selected-option'));
+            button.classList.add('selected-option');
+        });
+        document.getElementById('theme-options').addEventListener('click', e => {
+            const button = e.target.closest('.option-btn');
+            if (!button) return;
+            appState.settings.theme = button.dataset.value;
+            const newColors = themes[button.dataset.value].colors;
+            appState.settings.accentColor = Object.keys(newColors)[0];
+            populateAccentColors();
+            applyTheme();
+            themes[appState.settings.theme].renderer();
+            document.querySelectorAll(`#theme-options .option-btn`).forEach(btn => btn.classList.remove('selected-option'));
+            button.classList.add('selected-option');
+        });
+        document.getElementById('color-options').addEventListener('click', e => {
+            const button = e.target.closest('.option-btn');
+            if (!button) return;
+            appState.settings.accentColor = button.dataset.value;
+            document.querySelectorAll(`#color-options .option-btn`).forEach(btn => btn.classList.remove('selected-option'));
+            button.classList.add('selected-option');
+            applyTheme();
+            themes[appState.settings.theme].renderer();
+        });
+        document.getElementById('duration-options').addEventListener('click', e => {
+            const button = e.target.closest('.option-btn');
+            if (!button) return;
+            appState.settings.duration = button.dataset.value;
+            document.querySelectorAll(`#duration-options .option-btn`).forEach(btn => btn.classList.remove('selected-option'));
+            button.classList.add('selected-option');
+        });
+        audioToggle.addEventListener('change', (e) => {
+            appState.settings.audioEnabled = e.target.checked;
+            if (e.target.checked && Tone.context.state !== 'running') Tone.start();
+        });
+        volumeSlider.addEventListener('input', (e) => {
+            appState.settings.volume = e.target.value;
+            if(synth) synth.volume.value = appState.settings.volume;
+        });
+    }
+    
+    function populateAccentColors() {
+        const colorOptionsContainer = document.getElementById('color-options');
+        colorOptionsContainer.innerHTML = '';
+        const currentThemeColors = themes[appState.settings.theme].colors;
+        Object.entries(currentThemeColors).forEach(([key, value]) => {
+            const button = document.createElement('button');
+            button.dataset.value = key;
+            button.className = `option-btn p-2 h-12 rounded-lg border-2 ${value.main} ${value.text}`;
+            button.textContent = value.name;
+            colorOptionsContainer.appendChild(button);
+        });
+        document.querySelector(`#color-options .option-btn[data-value="${appState.settings.accentColor}"]`).classList.add('selected-option');
+    }
+
+    function populateLearnScreen() {
+        learnMethodList.innerHTML = '';
+        Object.entries(breathingMethods).forEach(([key, value], index) => {
+            const button = document.createElement('button');
+            const color = themes[appState.settings.theme].colors[appState.settings.accentColor];
+            button.className = `learn-method-btn text-left p-3 rounded-lg transition-colors duration-200 border-2 bg-black/20 ${color.btn} ${color.hover}`;
+            button.innerHTML = `<span class="font-bold">${value.name}</span>`;
+            button.onclick = () => {
+                learnSummaryText.textContent = value.summary;
+                document.querySelectorAll('.learn-method-btn').forEach(btn => btn.classList.remove(color.hover.replace('hover:','')));
+                button.classList.add(color.hover.replace('hover:',''));
+            };
+            learnMethodList.appendChild(button);
+            if (index === 0) button.click();
+        });
+    }
+
+    function checkScrollIndicator() {
+        const color = themes[appState.settings.theme].colors[appState.settings.accentColor];
+        scrollIndicator.classList.remove('text-fuchsia-400', 'text-cyan-400', 'text-lime-400', 'text-teal-300', 'text-sky-300', 'text-indigo-300', 'text-yellow-400', 'text-amber-400', 'text-rose-400');
+        scrollIndicator.classList.add(color.text);
+        if (settingsPanel.scrollHeight > settingsPanel.clientHeight) {
+            scrollIndicator.classList.remove('hidden');
+        } else {
+            scrollIndicator.classList.add('hidden');
+        }
+    }
+
+    // --- SESSION LOGIC ---
+    function startSession() {
+        showScreen('session');
+        appState.session.isRunning = true;
+        appState.session.isPaused = false;
+        appState.session.currentStep = 0;
+        appState.session.timeRemaining = appState.settings.duration === 'Infinity' ? Infinity : Number(appState.settings.duration);
+        shapeVisualizer.innerHTML = shapes[appState.settings.shape];
+        applyTheme();
+        buttons.pauseResume.textContent = 'Pause';
+        buttons.endSession.textContent = 'End Session';
+        updateTimerDisplay();
+        if (appState.session.timeRemaining !== Infinity) appState.session.timerId = setInterval(countdown, 1000);
+        runBreathingCycle();
+    }
+    
+    function cleanupSession() {
+        appState.session.isRunning = false;
+        clearTimeout(appState.session.cycleTimeoutId);
+        clearInterval(appState.session.timerId);
+        clearInterval(appState.session.stepCountdownIntervalId);
+        stepCountdownText.textContent = '';
+    }
+
+    function endSession() {
+        cleanupSession();
+        showScreen('start');
+    }
+
+    function togglePause() {
+        appState.session.isPaused = !appState.session.isPaused;
+        buttons.pauseResume.textContent = appState.session.isPaused ? 'Resume' : 'Pause';
+        buttons.endSession.classList.toggle('hidden');
+        if (appState.session.isPaused) {
+            shapeVisualizer.style.transitionDuration = '0.2s';
+            shapeVisualizer.style.opacity = '0.7';
+            clearTimeout(appState.session.cycleTimeoutId);
+            clearInterval(appState.session.stepCountdownIntervalId);
+        } else {
+            shapeVisualizer.style.opacity = '1';
+            runBreathingCycle();
+        }
+    }
+
+    function countdown() {
+        if (appState.session.isPaused || !appState.session.isRunning) return;
+        appState.session.timeRemaining--;
+        updateTimerDisplay();
+        if (appState.session.timeRemaining <= 0) {
+            instructionText.textContent = 'Session Complete!';
+            stepCountdownText.textContent = '';
+            cleanupSession();
+            setTimeout(endSession, 2000);
+        }
+    }
+
+    function updateTimerDisplay() {
+        if (appState.session.timeRemaining === Infinity) { timerText.textContent = 'Continuous Session'; return; }
+        const minutes = Math.floor(appState.session.timeRemaining / 60);
+        const seconds = appState.session.timeRemaining % 60;
+        timerText.textContent = `${minutes}:${seconds.toString().padStart(2, '0')} remaining`;
+    }
+
+    function performStep(step) {
+        return new Promise(resolve => {
+            if (!appState.session.isRunning || appState.session.isPaused) return;
+            instructionText.textContent = step.text;
+            if(appState.settings.audioEnabled) synth.triggerAttackRelease(step.text.includes("In") ? "C5" : "C4", "8n", Tone.now());
+            if (appState.settings.shape === 'box' && breathingMethods[appState.settings.method].name === 'Box') {
+                const boxPath = document.getElementById('box-path');
+                if (boxPath) {
+                    const length = boxPath.getTotalLength();
+                    boxPath.style.transition = 'none';
+                    boxPath.style.strokeDasharray = length;
+                    const offset = (length / 4) * (4 - appState.session.currentStep);
+                    boxPath.style.strokeDashoffset = offset;
+                    setTimeout(() => {
+                        boxPath.style.transition = `stroke-dashoffset ${step.time}s linear`;
+                        boxPath.style.strokeDashoffset = offset - (length / 4);
+                    }, 50);
+                }
+            } else {
+                 shapeVisualizer.style.transform = `scale(${step.scale})`;
+                 shapeVisualizer.style.transitionDuration = `${step.time}s`;
+            }
+            let timeLeftInStep = Math.ceil(step.time);
+            stepCountdownText.textContent = timeLeftInStep;
+            clearInterval(appState.session.stepCountdownIntervalId);
+            appState.session.stepCountdownIntervalId = setInterval(() => {
+                timeLeftInStep--;
+                if(appState.session.isRunning && !appState.session.isPaused) stepCountdownText.textContent = timeLeftInStep > 0 ? timeLeftInStep : '';
+                if (timeLeftInStep <= 0) clearInterval(appState.session.stepCountdownIntervalId);
+            }, 1000);
+            appState.session.cycleTimeoutId = setTimeout(resolve, step.time * 1000);
+        });
+    }
+
+    async function runBreathingCycle() {
+        if (!appState.session.isRunning || appState.session.isPaused) return;
+        const method = breathingMethods[appState.settings.method];
+        const step = method.steps[appState.session.currentStep];
+        await performStep(step);
+        if (appState.session.isRunning && !appState.session.isPaused) {
+            appState.session.currentStep = (appState.session.currentStep + 1) % method.steps.length;
+            runBreathingCycle();
+        }
+    }
+    
+    // --- ANIMATION RENDERERS ---
+    const canvas = animatedBg;
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    
+    function setupCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+
+    function stopAnimation() {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+    }
+
+    function animateConstellation() {
+        stopAnimation();
+        setupCanvas();
+        particles = [];
+        const starCount = Math.floor((canvas.width * canvas.height) / 15000);
+        for (let i = 0; i < starCount; i++) {
+            particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3, radius: Math.random() * 1.5 + 0.5 });
+        }
+        function loop() {
+            animationFrameId = requestAnimationFrame(loop);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const color = themes.constellation.colors[appState.settings.accentColor];
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.strokeStyle = color.stroke;
+            particles.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                if (p.x < 0 || p.x > canvas.width) p.vx = -p.vx;
+                if (p.y < 0 || p.y > canvas.height) p.vy = -p.vy;
+                ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); ctx.fill();
+            });
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dist = Math.hypot(particles[i].x - particles[j].x, particles[i].y - particles[j].y);
+                    if (dist < 100) {
+                        ctx.beginPath(); ctx.moveTo(particles[i].x, particles[i].y); ctx.lineTo(particles[j].x, particles[j].y); ctx.stroke();
+                    }
+                }
+            }
+        }
+        loop();
+    }
+
+    function animateOcean() {
+        stopAnimation();
+        setupCanvas();
+        const waves = [];
+        const waveCount = 5;
+        for (let i = 0; i < waveCount; i++) {
+            waves.push({ y: canvas.height / 2 + (i * 50), length: 0.01 + (i * 0.005), amplitude: 20 + (i * 10), speed: 0.02 + (i * 0.002) });
+        }
+        let step = 0;
+        function loop() {
+            animationFrameId = requestAnimationFrame(loop);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const color = themes.ocean.colors[appState.settings.accentColor];
+            ctx.strokeStyle = color.stroke;
+            ctx.lineWidth = 2;
+            waves.forEach(wave => {
+                ctx.beginPath();
+                ctx.moveTo(0, wave.y);
+                for (let i = 0; i < canvas.width; i++) {
+                    ctx.lineTo(i, wave.y + Math.sin(i * wave.length + step) * wave.amplitude);
+                }
+                ctx.stroke();
+            });
+            step += 0.02;
+        }
+        loop();
+    }
+
+    function animateDunes() {
+        stopAnimation();
+        setupCanvas();
+        particles = [];
+        const particleCount = Math.floor((canvas.width * canvas.height) / 10000);
+        for(let i = 0; i < particleCount; i++) {
+            particles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, life: Math.random() * 100 });
+        }
+        function loop() {
+            animationFrameId = requestAnimationFrame(loop);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const color = themes.dunes.colors[appState.settings.accentColor];
+            ctx.fillStyle = color.stroke;
+            particles.forEach(p => {
+                const angle = Math.sin(p.x / 200) * 0.5 + Math.cos(p.y / 200) * 0.5;
+                p.x += Math.cos(angle) * 1.5;
+                p.y += Math.sin(angle) * 1.5;
+                p.life--;
+                if(p.life <= 0) {
+                    p.x = Math.random() * canvas.width;
+                    p.y = Math.random() * canvas.height;
+                    p.life = Math.random() * 100;
+                }
+                ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); ctx.fill();
+            });
+        }
+        loop();
+    }
+
+    // --- INITIALIZATION ---
+    function setStartQuote() {
+        const newQuote = quotes[Math.floor(Math.random() * quotes.length)];
+        startQuote.text.textContent = `"${newQuote.text}"`;
+        startQuote.author.textContent = `- ${newQuote.author}`;
+    }
+
+    function initialize() {
+        buttons.startSession.addEventListener('click', () => {
+             if (Tone.context.state !== 'running') Tone.start();
+            startSession();
+        });
+        buttons.goToSettings.addEventListener('click', () => showScreen('settings'));
+        buttons.goToLearn.addEventListener('click', () => {
+            populateLearnScreen();
+            showScreen('learn');
+        });
+        buttons.settingsBack.addEventListener('click', () => showScreen('start'));
+        buttons.settingsClose.addEventListener('click', () => showScreen('start'));
+        buttons.learnBack.addEventListener('click', () => showScreen('start'));
+        buttons.pauseResume.addEventListener('click', togglePause);
+        buttons.endSession.addEventListener('click', endSession);
+        
+        setupOptionSelectors();
+        populateAccentColors();
+        setupAudio();
+        
+        document.querySelector(`#method-options .option-btn[data-value="${appState.settings.method}"]`).classList.add('selected-option');
+        document.querySelector(`#shape-options .option-btn[data-value="${appState.settings.shape}"]`).classList.add('selected-option');
+        document.querySelector(`#theme-options .option-btn[data-value="${appState.settings.theme}"]`).classList.add('selected-option');
+        document.querySelector(`#color-options .option-btn[data-value="${appState.settings.accentColor}"]`).classList.add('selected-option');
+        document.querySelector(`#duration-options .option-btn[data-value="${appState.settings.duration}"]`).classList.add('selected-option');
+        
+        applyTheme();
+        setStartQuote();
+        showScreen('start');
+        window.addEventListener('resize', () => {
+             themes[appState.settings.theme].renderer();
+             checkScrollIndicator();
+        });
+    }
+    
+    initialize();
+});
+</script>
+</body>
+</html>
