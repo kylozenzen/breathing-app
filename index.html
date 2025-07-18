@@ -183,6 +183,13 @@
         <!-- =================== SESSION SCREEN ==================== -->
         <!-- ======================================================= -->
         <div id="session-screen" class="screen hidden absolute top-0 left-0 w-full h-full flex flex-col p-6">
+            <div class="absolute top-0 left-0 w-full p-6 flex justify-between items-center z-20">
+                <p id="timer-text" class="text-sm text-white/70"></p>
+                <div class="flex items-center gap-4">
+                    <button id="pause-resume-btn" class="w-10 h-10 flex items-center justify-center"></button>
+                    <button id="end-session-btn" class="hidden">End</button>
+                </div>
+            </div>
             <div class="flex-grow flex flex-col items-center justify-center text-center">
                 <div id="shape-container" class="w-44 h-44 sm:w-52 sm:h-52 flex items-center justify-center">
                     <div id="shape-visualizer" class="w-full h-full"></div>
@@ -190,13 +197,6 @@
                 <div class="mt-20 sm:mt-24">
                     <p id="instruction-text" class="text-2xl sm:text-3xl font-medium h-8"></p>
                     <p id="step-countdown-text" class="text-2xl sm:text-3xl font-bold mt-2 h-12 sm:h-14"></p>
-                </div>
-            </div>
-            <div class="absolute bottom-8 left-1/2 -translate-x-1/2 w-full max-w-md flex flex-col items-center gap-3 px-6">
-                 <p id="timer-text" class="text-sm text-white/70"></p>
-                <div class="flex items-center gap-4">
-                    <button id="pause-resume-btn"></button>
-                    <button id="end-session-btn"></button>
                 </div>
             </div>
         </div>
@@ -250,6 +250,10 @@ document.addEventListener('DOMContentLoaded', () => {
         square: `<svg class="w-full h-full" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path id="box-path" d="M 5 5 L 95 5 L 95 95 L 5 95 Z" /></svg>`,
         triangle: `<svg class="w-full h-full" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"><path d="M50 5 L95 80 L5 80 Z"/></svg>`
     };
+    const icons = {
+        pause: `<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>`,
+        play: `<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M5 4l14 8-14 8V4z"/></svg>`
+    };
     const quotes = [ { text: "The only way to make sense out of change is to plunge into it, move with it, and join the dance.", author: "Alan Watts" }, { text: "This is the real secret of life -- to be completely engaged with what you are doing in the here and now. And instead of calling it work, realize it is play.", author: "Alan Watts" }, { text: "Muddy water is best cleared by leaving it alone.", author: "Alan Watts" }, { text: "The future is a concept, it doesn't exist. There is no such thing as tomorrow. There never will be, because time is always now.", author: "Alan Watts" }, { text: "To have faith is to trust yourself to the water. When you swim you don't grab hold of the water, because if you do you will sink and drown. Instead you relax, and float.", author: "Alan Watts" }, { text: "The quieter you become, the more you are able to hear.", author: "Rumi" }, { text: "Within you, there is a stillness and a sanctuary to which you can retreat at any time and be yourself.", author: "Hermann Hesse" }, { text: "Feelings come and go like clouds in a windy sky. Conscious breathing is my anchor.", author: "Thich Nhat Hanh" } ];
 
     // --- DOM ELEMENT REFERENCES ---
@@ -297,7 +301,8 @@ document.addEventListener('DOMContentLoaded', () => {
             start: 'w-64 px-8 py-4 text-xl font-bold rounded-full shadow-lg transform hover:scale-105 transition-all duration-300',
             secondary: 'w-32 px-4 py-2 text-lg font-semibold rounded-full shadow-lg transform hover:scale-105 transition-all duration-300',
             back: 'px-12 py-3 text-lg font-semibold rounded-full shadow-lg transform hover:scale-105 transition-all duration-300',
-            session: 'px-6 py-2 text-sm rounded-full font-semibold transition-all'
+            session: 'px-6 py-2 text-sm rounded-full font-semibold transition-all',
+            sessionIcon: 'w-10 h-10 flex items-center justify-center rounded-full transition-all'
         };
         const neonBtnClasses = `bg-black/20 border-2 ${color.btn} ${color.hover} ${color.text}`.split(' ').filter(Boolean);
         
@@ -306,7 +311,8 @@ document.addEventListener('DOMContentLoaded', () => {
             let type = 'secondary';
             if (key.includes('startSession')) type = 'start';
             if (key.includes('Back')) type = 'back';
-            if (key.includes('pause') || key.includes('end')) type = 'session';
+            if (key.includes('pause')) type = 'sessionIcon';
+            if (key.includes('end')) type = 'session';
             
             let base = btnBaseClasses[type] || '';
             if (key.includes('Close')) base = 'text-2xl text-white/50 hover:text-white';
@@ -446,8 +452,8 @@ document.addEventListener('DOMContentLoaded', () => {
         appState.session.timeRemaining = appState.settings.duration === 'Infinity' ? Infinity : Number(appState.settings.duration);
         shapeVisualizer.innerHTML = shapes[appState.settings.shape];
         applyTheme();
-        buttons.pauseResume.textContent = 'Pause';
-        buttons.endSession.textContent = 'End Session';
+        buttons.pauseResume.innerHTML = icons.pause;
+        buttons.endSession.textContent = 'End';
         updateTimerDisplay();
         if (appState.session.timeRemaining !== Infinity) appState.session.timerId = setInterval(countdown, 1000);
         runBreathingCycle();
@@ -468,7 +474,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function togglePause() {
         appState.session.isPaused = !appState.session.isPaused;
-        buttons.pauseResume.textContent = appState.session.isPaused ? 'Resume' : 'Pause';
+        buttons.pauseResume.innerHTML = appState.session.isPaused ? icons.play : icons.pause;
         buttons.endSession.classList.toggle('hidden');
         if (appState.session.isPaused) {
             shapeVisualizer.style.transitionDuration = '0.2s';
