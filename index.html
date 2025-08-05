@@ -84,11 +84,9 @@
                     <p id="start-quote-author" class="mt-2 text-sm text-white/50"></p>
                 </div>
                 <div class="space-y-4 flex flex-col items-center">
-                    <button id="start-session-btn">Start Session</button>
-                    <div class="flex gap-4">
-                       <button id="go-to-settings-btn">Settings</button>
-                       <button id="go-to-learn-btn">Learn</button>
-                    </div>
+                    <button id="start-breathing-btn">Breathing Session</button>
+                    <button id="start-focus-btn">Focus Session</button>
+                    <button id="go-to-settings-btn">Settings</button>
                 </div>
             </div>
         </div>
@@ -100,7 +98,11 @@
             <div id="settings-panel" class="w-full max-w-md mx-auto bg-black/30 backdrop-blur-sm p-4 rounded-2xl overflow-y-auto max-h-[90vh] relative">
                 <button id="settings-close-btn" class="absolute top-3 right-3 text-2xl text-white/50 hover:text-white z-20">&times;</button>
                 <h1 class="text-xl font-bold text-center mb-4">Settings</h1>
-                <div class="space-y-4 pb-8">
+                <div id="settings-tabs" class="flex justify-center gap-4 mb-4">
+                    <button id="breathing-tab" class="tab-btn px-3 py-1 border-b-2">Breathing Settings</button>
+                    <button id="focus-tab" class="tab-btn px-3 py-1 border-b-2 border-transparent text-white/50">Focus Settings</button>
+                </div>
+                <div id="breathing-settings" class="settings-content space-y-4 pb-8">
                     <div>
                         <h2 class="text-sm font-semibold mb-1">Breathing Method</h2>
                         <div id="method-options" class="grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
@@ -113,12 +115,12 @@
                             <button data-value="triangle" class="option-btn p-2 h-16 rounded-lg flex items-center justify-center"><svg class="w-9 h-9 text-white/50 pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="10"><path d="M50 5 L95 80 L5 80 Z"/></svg></button>
                         </div>
                     </div>
-                     <div>
+                    <div>
                         <h2 class="text-sm font-semibold mb-1">Theme</h2>
                         <div id="theme-options" class="grid grid-cols-3 gap-2">
-                             <button data-value="constellation" class="option-btn p-2 h-12 rounded-lg text-sm">Constellation</button>
-                             <button data-value="ocean" class="option-btn p-2 h-12 rounded-lg text-sm">Deep Ocean</button>
-                             <button data-value="dunes" class="option-btn p-2 h-12 rounded-lg text-sm">Shifting Dunes</button>
+                            <button data-value="constellation" class="option-btn p-2 h-12 rounded-lg text-sm">Constellation</button>
+                            <button data-value="ocean" class="option-btn p-2 h-12 rounded-lg text-sm">Deep Ocean</button>
+                            <button data-value="dunes" class="option-btn p-2 h-12 rounded-lg text-sm">Shifting Dunes</button>
                         </div>
                     </div>
                     <div id="accent-color-container">
@@ -134,7 +136,7 @@
                             <button data-value="Infinity" class="option-btn p-3 rounded-lg text-sm">Cont.</button>
                         </div>
                     </div>
-                     <div>
+                    <div>
                         <h2 class="text-sm font-semibold mb-2">Audio Guide</h2>
                         <div class="bg-black/20 p-3 rounded-lg space-y-3">
                             <div class="flex items-center justify-between">
@@ -144,11 +146,27 @@
                                     <label for="audio-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-600 cursor-pointer"></label>
                                 </div>
                             </div>
-                             <div class="flex items-center justify-between">
+                            <div class="flex items-center justify-between">
                                 <label for="volume-slider" class="text-white/80 text-sm">Volume</label>
                                 <input type="range" id="volume-slider" min="-30" max="0" value="-10" class="w-1/2">
                             </div>
                         </div>
+                    </div>
+                    <div class="text-center mt-6">
+                        <button id="open-learn-btn">Learn</button>
+                    </div>
+                </div>
+                <div id="focus-settings" class="settings-content hidden space-y-4 pb-8">
+                    <div>
+                        <h2 class="text-sm font-semibold mb-1">Focus Duration</h2>
+                        <div id="focus-duration-options" class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            <button data-value="900" class="option-btn p-3 rounded-lg text-sm">15 Min</button>
+                            <button data-value="1500" class="option-btn p-3 rounded-lg text-sm">25 Min</button>
+                            <button data-value="2700" class="option-btn p-3 rounded-lg text-sm">45 Min</button>
+                        </div>
+                    </div>
+                    <div class="text-center mt-6">
+                        <button id="start-focus-session-btn">Start Focus Session</button>
                     </div>
                 </div>
                 <div id="scroll-indicator" class="sticky bottom-0 text-center hidden pointer-events-none h-12 bg-gradient-to-t from-black/80 via-black/50 to-transparent -mx-4">
@@ -198,6 +216,18 @@
                     <p id="instruction-text" class="text-2xl sm:text-3xl font-medium h-8"></p>
                     <p id="step-countdown-text" class="text-2xl sm:text-3xl font-bold mt-2 h-12 sm:h-14"></p>
                 </div>
+            </div>
+        </div>
+        <div id="focus-session-screen" class="screen hidden absolute top-0 left-0 w-full h-full flex flex-col p-6">
+            <div class="absolute top-0 left-0 w-full p-6 flex justify-between items-center z-20">
+                <p id="focus-timer-text" class="text-sm text-white/70"></p>
+                <div class="flex items-center gap-4">
+                    <button id="focus-pause-resume-btn" class="w-10 h-10 flex items-center justify-center"></button>
+                    <button id="focus-end-session-btn" class="hidden">End</button>
+                </div>
+            </div>
+            <div class="flex-grow flex items-center justify-center">
+                <p id="focus-countdown-text" class="text-5xl font-bold"></p>
             </div>
         </div>
     </div>
@@ -258,12 +288,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- DOM ELEMENT REFERENCES ---
     const animatedBg = document.getElementById('animated-bg');
-    const screens = { start: document.getElementById('start-screen'), settings: document.getElementById('settings-screen'), learn: document.getElementById('learn-screen'), session: document.getElementById('session-screen') };
-    const buttons = { startSession: document.getElementById('start-session-btn'), goToSettings: document.getElementById('go-to-settings-btn'), goToLearn: document.getElementById('go-to-learn-btn'), settingsBack: document.getElementById('settings-back-btn'), settingsClose: document.getElementById('settings-close-btn'), learnBack: document.getElementById('learn-back-btn'), pauseResume: document.getElementById('pause-resume-btn'), endSession: document.getElementById('end-session-btn') };
+    const screens = { start: document.getElementById('start-screen'), settings: document.getElementById('settings-screen'), learn: document.getElementById('learn-screen'), session: document.getElementById('session-screen'), focusSession: document.getElementById('focus-session-screen') };
+    const buttons = {
+        startSession: document.getElementById('start-breathing-btn'),
+        startFocus: document.getElementById('start-focus-btn'),
+        goToSettings: document.getElementById('go-to-settings-btn'),
+        settingsBack: document.getElementById('settings-back-btn'),
+        settingsClose: document.getElementById('settings-close-btn'),
+        openLearn: document.getElementById('open-learn-btn'),
+        learnBack: document.getElementById('learn-back-btn'),
+        pauseResume: document.getElementById('pause-resume-btn'),
+        endSession: document.getElementById('end-session-btn'),
+        startFocusSession: document.getElementById('start-focus-session-btn'),
+        focusPauseResume: document.getElementById('focus-pause-resume-btn'),
+        focusEndSession: document.getElementById('focus-end-session-btn')
+    };
     const shapeVisualizer = document.getElementById('shape-visualizer');
     const instructionText = document.getElementById('instruction-text');
     const timerText = document.getElementById('timer-text');
     const stepCountdownText = document.getElementById('step-countdown-text');
+    const focusTimerText = document.getElementById('focus-timer-text');
+    const focusCountdownText = document.getElementById('focus-countdown-text');
     const learnMethodList = document.getElementById('learn-method-list');
     const learnSummaryText = document.getElementById('learn-summary-text');
     const startQuote = { text: document.getElementById('start-quote-text'), author: document.getElementById('start-quote-author') };
@@ -273,7 +318,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const scrollIndicator = document.getElementById('scroll-indicator');
     
     // --- STATE MANAGEMENT ---
-    let appState = { settings: { method: '4-7-8', shape: 'circle', theme: 'constellation', accentColor: 'fuchsia', duration: 60, audioEnabled: false, volume: -10 }, session: { isRunning: false, isPaused: false, timerId: null, cycleTimeoutId: null, stepCountdownIntervalId: null, timeRemaining: 0, currentStep: 0 } };
+    let appState = {
+        settings: { method: '4-7-8', shape: 'circle', theme: 'constellation', accentColor: 'fuchsia', duration: 60, audioEnabled: false, volume: -10 },
+        session: { isRunning: false, isPaused: false, timerId: null, cycleTimeoutId: null, stepCountdownIntervalId: null, timeRemaining: 0, currentStep: 0 },
+        focus: { duration: 1500, isRunning: false, isPaused: false, timerId: null, timeRemaining: 0 }
+    };
     let animationFrameId;
     let synth;
 
@@ -294,6 +343,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (screenName === 'settings') setTimeout(checkScrollIndicator, 100);
     }
 
+    function switchSettingsTab(tab) {
+        const breathingTab = document.getElementById('breathing-tab');
+        const focusTab = document.getElementById('focus-tab');
+        const breathingContent = document.getElementById('breathing-settings');
+        const focusContent = document.getElementById('focus-settings');
+        if (tab === 'focus') {
+            breathingContent.classList.add('hidden');
+            focusContent.classList.remove('hidden');
+            breathingTab.classList.add('text-white/50', 'border-transparent');
+            focusTab.classList.remove('text-white/50', 'border-transparent');
+        } else {
+            focusContent.classList.add('hidden');
+            breathingContent.classList.remove('hidden');
+            focusTab.classList.add('text-white/50', 'border-transparent');
+            breathingTab.classList.remove('text-white/50', 'border-transparent');
+        }
+        setTimeout(checkScrollIndicator, 100);
+    }
+
     // --- THEME APPLICATION ---
     function applyTheme() {
         const color = themes[appState.settings.theme].colors[appState.settings.accentColor];
@@ -309,17 +377,18 @@ document.addEventListener('DOMContentLoaded', () => {
         Object.entries(buttons).forEach(([key, btn]) => {
             if (!btn) return;
             let type = 'secondary';
-            if (key.includes('startSession')) type = 'start';
+            if (key.startsWith('start')) type = 'start';
             if (key.includes('Back')) type = 'back';
             if (key.includes('pause')) type = 'sessionIcon';
             if (key.includes('end')) type = 'session';
-            
+
             let base = btnBaseClasses[type] || '';
             if (key.includes('Close')) base = 'text-2xl text-white/50 hover:text-white';
-            
+
             btn.className = `${base} ${neonBtnClasses.join(' ')}`;
         });
         buttons.endSession.classList.add('hidden');
+        if (buttons.focusEndSession) buttons.focusEndSession.classList.add('hidden');
         buttons.settingsClose.className = 'absolute top-3 right-3 text-2xl text-white/50 hover:text-white z-20';
 
 
@@ -333,6 +402,10 @@ document.addEventListener('DOMContentLoaded', () => {
             stepCountdownText.className = stepCountdownText.className.split(' ').filter(c => !c.startsWith('text-')).join(' ');
             instructionText.classList.add(color.text);
             stepCountdownText.classList.add(color.text);
+            if (focusCountdownText) {
+                focusCountdownText.className = focusCountdownText.className.split(' ').filter(c => !c.startsWith('text-')).join(' ');
+                focusCountdownText.classList.add(color.text);
+            }
             shapeVisualizer.className = 'w-full h-full';
             shapeVisualizer.classList.add(color.glow);
         }
@@ -398,6 +471,17 @@ document.addEventListener('DOMContentLoaded', () => {
         volumeSlider.addEventListener('input', (e) => {
             appState.settings.volume = e.target.value;
             if(synth) synth.volume.value = appState.settings.volume;
+        });
+    }
+
+    function setupFocusSettings() {
+        const focusDurationContainer = document.getElementById('focus-duration-options');
+        focusDurationContainer.addEventListener('click', e => {
+            const button = e.target.closest('.option-btn');
+            if (!button) return;
+            appState.focus.duration = button.dataset.value;
+            document.querySelectorAll(`#focus-duration-options .option-btn`).forEach(btn => btn.classList.remove('selected-option'));
+            button.classList.add('selected-option');
         });
     }
     
@@ -550,7 +634,45 @@ document.addEventListener('DOMContentLoaded', () => {
             runBreathingCycle();
         }
     }
-    
+    // --- FOCUS SESSION LOGIC ---
+    function startFocusSession() {
+        showScreen('focusSession');
+        appState.focus.isRunning = true;
+        appState.focus.isPaused = false;
+        appState.focus.timeRemaining = Number(appState.focus.duration);
+        buttons.focusPauseResume.innerHTML = icons.pause;
+        buttons.focusEndSession.classList.add('hidden');
+        applyTheme();
+        updateFocusTimerDisplay();
+        appState.focus.timerId = setInterval(() => {
+            if (!appState.focus.isPaused && appState.focus.isRunning) {
+                appState.focus.timeRemaining--;
+                updateFocusTimerDisplay();
+                if (appState.focus.timeRemaining <= 0) endFocusSession();
+            }
+        }, 1000);
+    }
+
+    function updateFocusTimerDisplay() {
+        const minutes = Math.floor(appState.focus.timeRemaining / 60);
+        const seconds = appState.focus.timeRemaining % 60;
+        focusTimerText.textContent = `${minutes}:${seconds.toString().padStart(2, '0')} remaining`;
+        focusCountdownText.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    function toggleFocusPause() {
+        if (!appState.focus.isRunning) return;
+        appState.focus.isPaused = !appState.focus.isPaused;
+        buttons.focusPauseResume.innerHTML = appState.focus.isPaused ? icons.play : icons.pause;
+        buttons.focusEndSession.classList.toggle('hidden');
+    }
+
+    function endFocusSession() {
+        clearInterval(appState.focus.timerId);
+        appState.focus.isRunning = false;
+        showScreen('start');
+    }
+
     // --- ANIMATION RENDERERS ---
     const canvas = animatedBg;
     const ctx = canvas.getContext('2d');
@@ -664,36 +786,54 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function initialize() {
         buttons.startSession.addEventListener('click', () => {
-             if (Tone.context.state !== 'running') Tone.start();
+            if (Tone.context.state !== 'running') Tone.start();
             startSession();
         });
-        buttons.goToSettings.addEventListener('click', () => showScreen('settings'));
-        buttons.goToLearn.addEventListener('click', () => {
+        buttons.startFocus.addEventListener('click', () => {
+            showScreen('settings');
+            switchSettingsTab('focus');
+        });
+        buttons.goToSettings.addEventListener('click', () => {
+            showScreen('settings');
+            switchSettingsTab('breathing');
+        });
+        document.getElementById('breathing-tab').addEventListener('click', () => switchSettingsTab('breathing'));
+        document.getElementById('focus-tab').addEventListener('click', () => switchSettingsTab('focus'));
+        buttons.openLearn.addEventListener('click', () => {
             populateLearnScreen();
             showScreen('learn');
         });
         buttons.settingsBack.addEventListener('click', () => showScreen('start'));
         buttons.settingsClose.addEventListener('click', () => showScreen('start'));
-        buttons.learnBack.addEventListener('click', () => showScreen('start'));
+        buttons.learnBack.addEventListener('click', () => {
+            showScreen('settings');
+            switchSettingsTab('breathing');
+        });
         buttons.pauseResume.addEventListener('click', togglePause);
         buttons.endSession.addEventListener('click', endSession);
-        
+        buttons.startFocusSession.addEventListener('click', startFocusSession);
+        buttons.focusPauseResume.addEventListener('click', toggleFocusPause);
+        buttons.focusEndSession.addEventListener('click', endFocusSession);
+
         setupOptionSelectors();
+        setupFocusSettings();
         populateAccentColors();
         setupAudio();
-        
+
         document.querySelector(`#method-options .option-btn[data-value="${appState.settings.method}"]`).classList.add('selected-option');
         document.querySelector(`#shape-options .option-btn[data-value="${appState.settings.shape}"]`).classList.add('selected-option');
         document.querySelector(`#theme-options .option-btn[data-value="${appState.settings.theme}"]`).classList.add('selected-option');
         document.querySelector(`#color-options .option-btn[data-value="${appState.settings.accentColor}"]`).classList.add('selected-option');
         document.querySelector(`#duration-options .option-btn[data-value="${appState.settings.duration}"]`).classList.add('selected-option');
-        
+        document.querySelector(`#focus-duration-options .option-btn[data-value="${appState.focus.duration}"]`).classList.add('selected-option');
+
         applyTheme();
         setStartQuote();
+        switchSettingsTab('breathing');
         showScreen('start');
         window.addEventListener('resize', () => {
-             themes[appState.settings.theme].renderer();
-             checkScrollIndicator();
+            themes[appState.settings.theme].renderer();
+            checkScrollIndicator();
         });
     }
     

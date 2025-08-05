@@ -4,19 +4,21 @@ Welcome to Mindful Breathing, a customizable web-based application designed to g
 (You can replace this with a screenshot of the app once it's live!)
 
 ✨ Features
-Multiple Breathing Techniques: Choose from 8 scientifically-backed breathing methods, including Box Breathing, 4-7-8, and Physiological Sigh, each with a summary of its benefits.
+ Multiple Breathing Techniques: Choose from 8 scientifically-backed breathing methods, including Box Breathing, 4-7-8, and Physiological Sigh, each with a summary of its benefits.
 
-Dynamic Visual Themes: Select from 3 beautifully animated, generative backgrounds (Constellation, Deep Ocean, Shifting Dunes) to create a calming atmosphere.
+ Dynamic Visual Themes: Select from 3 beautifully animated, generative backgrounds (Constellation, Deep Ocean, Shifting Dunes) to create a calming atmosphere.
 
-Customizable Accent Colors: Each theme comes with its own set of accent colors to personalize the look and feel of your session.
+ Customizable Accent Colors: Each theme comes with its own set of accent colors to personalize the look and feel of your session.
 
-Animated Visual Guides: Follow along with clean, minimalist shapes (Circle, Square, Triangle) that animate in sync with your chosen breathing pattern.
+ Animated Visual Guides: Follow along with clean, minimalist shapes (Circle, Square, Triangle) that animate in sync with your chosen breathing pattern.
 
-Guided Audio: An optional audio guide with pleasant chimes helps you follow the exercises with your eyes closed. Includes a volume control for comfort.
+ Guided Audio: An optional audio guide with pleasant chimes helps you follow the exercises with your eyes closed. Includes a volume control for comfort.
 
-Fully Responsive: The interface is optimized for a seamless experience on any device, from mobile phones to desktop monitors.
+ Focus Timer: Configure a dedicated focus session with preset durations and a simple countdown interface.
 
-"Learn" Section: An in-app educational screen provides summaries of each breathing technique and its specific benefits.
+ Fully Responsive: The interface is optimized for a seamless experience on any device, from mobile phones to desktop monitors.
+
+ "Learn" Section: Accessible from the Breathing Settings tab, this educational screen provides summaries of each breathing technique and its specific benefits.
 
 🚀 How to Use
 This project is a single, self-contained HTML file. No installation or build process is required.
